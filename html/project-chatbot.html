@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI 고객상담 자동화 시스템 구축 — 김정환의 portfolio</title>
+<meta name="description" content="Channel Talk으로 LLM·RAG·Workflow 기반 고객 상담 자동화를 구축한 인턴십(고용노동부 청년 일경험)" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ---------- 디자인 토큰 (기존 페이지와 동일) ---------- */
+  :root {
+    --bg: #fdfdfc;
+    --ink: #1c1c1a;
+    --ink-soft: #4a4a46;
+    --ink-dim: #9b9b95;   /* 장식용(번호, 플레이스홀더)에만 사용 */
+    --ink-mute: #6b6b65;  /* 작은 정보 텍스트용: 색 대비 확보를 위해 추가한 토큰 */
+    --line: #ebebe6;
+    --card: #ffffff;
+    --radius: 14px;
+    --font-mono: "JetBrains Mono", ui-monospace, monospace;
+    --font-body: "Inter", -apple-system, "Pretendard", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); }
+  body { font-family: var(--font-body); -webkit-font-smoothing: antialiased; line-height: 1.68; word-break: keep-all; overflow-wrap: break-word; }
+  a { color: inherit; text-decoration: none; }
+  a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; border-radius: 6px; }
+  [hidden] { display: none !important; }
+  .container { max-width: 900px; margin: 0 auto; padding: 0 40px; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  .topline {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 22px 40px; font-family: var(--font-mono); font-size: 11.5px;
+    color: var(--ink-mute); border-bottom: 1px solid var(--line);
+  }
+  .topline nav { display: flex; gap: 22px; }
+  .topline nav a:hover { color: var(--ink); }
+
+  /* ---------- Hero ---------- */
+  .hero { padding: 40px 0 28px; }
+  .back-row { margin-bottom: 20px; font-family: var(--font-mono); font-size: 12.5px; }
+  .back { color: var(--ink-mute); }
+  .back:hover { color: var(--ink); }
+  .badge-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .badge {
+    font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-soft);
+    background: var(--bg); border: 1px solid var(--line); border-radius: 20px; padding: 3px 10px;
+  }
+  h1 { font-size: clamp(1.8rem, 4.2vw, 2.6rem); font-weight: 700; margin: 0 0 8px; letter-spacing: -0.015em; line-height: 1.25; }
+  .tagline { color: var(--ink-soft); font-size: 16px; margin: 0 0 6px; }
+  .kind { font-family: var(--font-mono); font-size: 12px; color: var(--ink-mute); margin: 0 0 26px; }
+
+  /* 야간 문의 수치 (Hero / Highlight / Result 공용) */
+  .night-metric { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px 24px; }
+  .nm-title { font-family: var(--font-mono); font-size: 11px; color: var(--ink-mute); margin: 0 0 12px; letter-spacing: .02em; }
+  .nm-nums { display: flex; align-items: flex-end; gap: 14px 20px; flex-wrap: wrap; }
+  .nm-col { display: flex; flex-direction: column; }
+  .nm-label { font-family: var(--font-mono); font-size: 11px; color: var(--ink-mute); margin-bottom: 2px; }
+  .nm-val { font-family: var(--font-mono); font-weight: 500; font-size: clamp(34px, 8vw, 56px); line-height: 1.05; color: var(--ink); }
+  .nm-col.before .nm-val { color: var(--ink-mute); }
+  .nm-approx { font-size: 0.34em; margin-right: 6px; color: var(--ink-mute); font-weight: 400; }
+  .nm-unit { font-size: 0.34em; margin-left: 4px; color: var(--ink-mute); font-weight: 400; }
+  .nm-arrow { font-family: var(--font-mono); font-size: clamp(24px, 5vw, 36px); color: var(--ink-mute); padding-bottom: 6px; }
+  .nm-per { font-family: var(--font-mono); font-size: 14px; color: var(--ink-soft); padding-bottom: 8px; }
+  .nm-bars { margin-top: 18px; display: grid; gap: 8px; }
+  .nm-bar { height: 10px; border-radius: 6px; background: var(--line); overflow: hidden; }
+  .nm-bar i { display: block; height: 100%; width: calc(var(--w) * 100%); background: var(--ink-dim); transform-origin: left; animation: grow .9s cubic-bezier(.22,1,.36,1) both; }
+  .nm-bar.after i { background: var(--ink); }
+  @keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  .nm-foot { font-family: var(--font-mono); font-size: 11px; color: var(--ink-mute); margin: 12px 0 0; }
+  .night-result { padding: 28px 28px; }
+  .night-result .nm-val { font-size: clamp(40px, 10vw, 72px); }
+
+  /* Hero 요약 4칸 */
+  .sum-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 16px; }
+  .sum { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; }
+  .sum .k { font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-mute); letter-spacing: .02em; display: block; margin-bottom: 6px; }
+  .sum p { margin: 0; font-size: 13.5px; color: var(--ink-soft); line-height: 1.6; }
+  .sum p b { color: var(--ink); font-weight: 600; }
+  .sum-list { margin: 0; padding-left: 18px; font-size: 13.5px; color: var(--ink); line-height: 1.7; }
+  .sum-list li { margin-bottom: 2px; }
+
+  /* ---------- 목차 ---------- */
+  .toc {
+    display: flex; gap: 4px; flex-wrap: wrap;
+    position: sticky; top: 0; background: rgba(253,253,252,0.94); backdrop-filter: blur(6px);
+    padding: 12px 0; border-bottom: 1px solid var(--line); margin-bottom: 40px; z-index: 5;
+  }
+  .toc a { font-family: var(--font-mono); font-size: 12px; color: var(--ink-mute); padding: 6px 12px; border-radius: 20px; transition: background .15s, color .15s; white-space: nowrap; }
+  .toc a:hover { background: var(--card); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); }
+  .toc a.active { background: var(--ink); color: var(--bg); }
+
+  /* ---------- 섹션 공통 ---------- */
+  .section { margin-bottom: 56px; scroll-margin-top: 64px; }
+  .section-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 16px; }
+  .section-head .idx { font-family: var(--font-mono); font-size: 12px; color: var(--ink-dim); }
+  .section-head h2 { font-size: 19px; font-weight: 700; margin: 0; }
+  .section-head .sub { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-mute); }
+  h3.mini { font-size: 14.5px; font-weight: 600; margin: 28px 0 10px; color: var(--ink); scroll-margin-top: 80px; }
+  .section p:not([class]) { color: var(--ink-soft); font-size: 14.5px; margin: 0 0 12px; max-width: 68ch; }
+  .section p b, .section li b { color: var(--ink); font-weight: 600; }
+  .section ul { margin: 0 0 8px; padding-left: 20px; }
+  .section li { color: var(--ink-soft); font-size: 14.5px; margin-bottom: 6px; }
+  .note { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-mute); }
+  
+
+  .label-chip {
+    display: inline-block; font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-soft);
+    border: 1px solid var(--ink-dim); border-radius: 4px; padding: 1px 7px; margin-bottom: 14px;
+  }
+
+  /* 카드 그리드 공용 */
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; }
+
+  /* 개요 */
+  .meta { display: grid; grid-template-columns: 90px 1fr; gap: 8px 14px; font-size: 13.5px; margin: 0 0 22px; }
+  .meta dt { font-family: var(--font-mono); font-size: 11px; color: var(--ink-mute); padding-top: 3px; }
+  .meta dd { margin: 0; color: var(--ink-soft); }
+  .meta .kw { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  /* 목표 */
+  .goal { margin: 0; padding: 18px 22px; background: var(--card); border: 1px solid var(--line); border-left: 3px solid var(--ink); border-radius: 0 var(--radius) var(--radius) 0; font-size: 15.5px; line-height: 1.7; color: var(--ink); }
+
+  /* 추가 성과 */
+  .xm-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-top: 12px; }
+  .xm { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; }
+  .xm-label { display: block; font-family: var(--font-mono); font-size: 11px; color: var(--ink-mute); }
+  .xm-val { display: block; font-family: var(--font-mono); font-size: 24px; margin-top: 4px; }
+  .caution { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-mute); margin: 10px 0 0; }
+
+  /* My Role */
+  .compare2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 18px; }
+  .col-box { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; }
+  .col-box.me { border-color: var(--ink); }
+  .col-box h3 { margin: 0 0 4px; font-size: 14.5px; font-weight: 700; }
+  .col-box .cap { font-family: var(--font-mono); font-size: 11px; color: var(--ink-mute); display: block; margin-bottom: 12px; }
+  .col-box ul { margin: 0; padding-left: 18px; }
+  .col-box li { font-size: 13.5px; margin-bottom: 5px; }
+
+  .dd summary { list-style: none; cursor: pointer; }
+  .dd summary::-webkit-details-marker { display: none; }
+  .dd summary::after { content: "+"; font-family: var(--font-mono); color: var(--ink-mute); font-size: 16px; flex-shrink: 0; }
+  .dd[open] summary::after { content: "−"; }
+
+
+
+  /* RAG */
+  .rag { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; }
+  .lane-label { font-family: var(--font-mono); font-size: 11px; color: var(--ink-mute); margin: 0 0 8px !important; }
+  .lane { display: flex; flex-wrap: wrap; gap: 8px 6px; align-items: center; margin-bottom: 4px; }
+  .rag-step { font-family: var(--font-mono); font-size: 12px; color: var(--ink-soft); background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: border-color .15s, background .15s, color .15s; }
+  .rag-step .num { font-size: 10px; color: var(--ink-mute); }
+  .rag-step:hover { border-color: var(--ink-dim); }
+  .rag-step[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .rag-step[aria-pressed="true"] .num { color: var(--bg); opacity: .7; }
+  .lane .arr { font-family: var(--font-mono); color: var(--ink-dim); font-size: 12px; }
+  .bridge { font-family: var(--font-mono); font-size: 11px; color: var(--ink-mute); margin: 10px 0 12px; padding-left: 10px; border-left: 1px solid var(--ink-dim); }
+  .rag-panel { margin-top: 16px; border-top: 1px solid var(--line); padding-top: 14px; min-height: 76px; }
+  .rag-panel strong { font-family: var(--font-mono); font-size: 12.5px; display: block; margin-bottom: 4px; }
+  .rag-panel p { margin: 0 !important; font-size: 13.5px !important; }
+
+  /* Traditional vs Channel Talk */
+  .vs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .vs-col { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; }
+  .vs-col h3 { margin: 0 0 2px; font-size: 14.5px; font-weight: 700; }
+  .vs-col .who { font-family: var(--font-mono); font-size: 11px; color: var(--ink-mute); display: block; margin-bottom: 14px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { font-family: var(--font-mono); font-size: 11.5px; border: 1px solid var(--line); border-radius: 8px; padding: 4px 10px; background: var(--bg); color: var(--ink-soft); }
+  .vs-flow { display: flex; flex-direction: column; gap: 8px; }
+  .vs-flow .arrow { font-family: var(--font-mono); color: var(--ink-dim); text-align: center; font-size: 12px; }
+  .vs-me { border: 1px solid var(--ink); border-radius: 10px; padding: 10px 12px; font-size: 13px; color: var(--ink); }
+  .blackbox { border: 1.5px dashed var(--ink-mute); border-radius: 10px; padding: 16px 12px; text-align: center; background: repeating-linear-gradient(135deg, transparent 0 8px, rgba(0,0,0,0.025) 8px 16px); }
+  .blackbox b { font-size: 13.5px; display: block; }
+  .blackbox small { font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-mute); display: block; margin-top: 4px; }
+  .conclusion { margin-top: 16px; font-size: 15px !important; color: var(--ink) !important; font-weight: 500; }
+
+  /* Deep Dive */
+  .dd { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 10px; }
+  .dd[open] { border-color: var(--ink-dim); }
+  .dd summary { display: flex; align-items: center; gap: 12px; padding: 16px 18px; }
+  .dd .letter { font-family: var(--font-mono); font-size: 12px; color: var(--bg); background: var(--ink); border-radius: 6px; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .dd .ttl { flex: 1; min-width: 0; }
+  .dd .ttl b { display: block; font-size: 14.5px; line-height: 1.4; }
+  .dd .ttl span { display: block; font-size: 12.5px; color: var(--ink-mute); line-height: 1.5; }
+  .dd .dd-body { padding: 0 18px 18px 56px; }
+  .status { font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-soft); border: 1px solid var(--ink-dim); border-radius: 20px; padding: 2px 9px; white-space: nowrap; }
+  .who-rows { border: 1px solid var(--line); border-radius: 10px; margin: 0 0 14px; overflow: hidden; }
+  .who-rows div { display: grid; grid-template-columns: 82px 1fr; gap: 10px; padding: 8px 12px; font-size: 12.5px; }
+  .who-rows div + div { border-top: 1px solid var(--line); }
+  .who-rows dt { font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-mute); padding-top: 2px; }
+  .who-rows dd { margin: 0; color: var(--ink-soft); }
+  .who-rows .me dd { color: var(--ink); }
+  .dd-body h4 { font-size: 13px; margin: 16px 0 6px; font-weight: 600; }
+  .dd-body ul { margin: 0 0 6px; padding-left: 18px; }
+  .dd-body li { font-size: 13.5px !important; }
+  .dd-body p { font-size: 13.5px !important; }
+
+
+  /* Insight */
+  .insights { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .ins { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; }
+  .ins .n { font-family: var(--font-mono); font-size: 11px; color: var(--ink-dim); }
+  .ins h3 { margin: 2px 0 6px; font-size: 14.5px; font-weight: 700; }
+  .ins p { margin: 0 !important; font-size: 13.5px !important; }
+
+
+  /* Why: 만든 이유 3가지 */
+  .why-grid { display: grid; gap: 12px; margin: 4px 0 26px; }
+  .why-card { display: flex; gap: 14px; align-items: flex-start; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; }
+  .why-card .n { font-family: var(--font-mono); font-size: 12px; color: var(--bg); background: var(--ink); border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .why-card h3 { margin: 0 0 4px; font-size: 15.5px; font-weight: 700; line-height: 1.4; }
+  .why-card .why-desc { margin: 0; font-size: 13.5px; color: var(--ink-soft); }
+  .why-links { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
+  .why-links .lbl { font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-mute); }
+  .why-links a { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-soft); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 3px 10px; transition: border-color .15s, color .15s; }
+  .why-links a:hover { border-color: var(--ink); color: var(--ink); }
+  .goal-label { margin: 0 0 6px !important; }
+
+  /* 참고(접이식) */
+  .ref .dd-body { padding: 0 18px 18px; }
+  .ref .conclusion { font-size: 15px !important; }
+  .dd { scroll-margin-top: 80px; }
+
+  /* 스크린샷 플레이스홀더 */
+  .shot { margin: 14px 0 6px; }
+  .shot-ph { aspect-ratio: 16 / 9; border: 1px dashed var(--ink-dim); border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-align: center; padding: 10px; background: var(--bg); }
+  .shot-ph b { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-mute); font-weight: 500; }
+  .shot-ph span { font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-mute); }
+  .shot img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border: 1px solid var(--line); border-radius: 10px; display: block; }
+  .shot figcaption { font-family: var(--font-mono); font-size: 11px; color: var(--ink-mute); margin-top: 6px; }
+
+  footer { padding: 40px 0 50px; font-family: var(--font-mono); font-size: 11px; color: var(--ink-mute); border-top: 1px solid var(--line); }
+
+  /* ---------- 반응형 ---------- */
+  @media (max-width: 700px) {
+    .container, .topline { padding-left: 22px; padding-right: 22px; }
+    .toc { overflow-x: auto; flex-wrap: nowrap; }
+    .sum-grid, .compare2, .vs, .insights { grid-template-columns: 1fr; }
+    .meta { grid-template-columns: 1fr; gap: 2px; }
+    .meta dd { margin-bottom: 10px; }
+    .night-metric, .night-result { padding: 18px; }
+    .dd .dd-body { padding: 0 16px 16px 16px; }
+    .dd summary { align-items: flex-start; flex-wrap: wrap; }
+    .dd .ttl { flex-basis: calc(100% - 80px); }
+    .why-card { padding: 16px; }
+    .who-rows div { grid-template-columns: 1fr; gap: 2px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .nm-bar i { animation: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topline">
+  <span>~$ whoami kjh2853</span>
+  <nav aria-label="사이트 메뉴">
+    <a href="index.html">home</a>
+    <a href="index.html#projects">projects</a>
+    <a href="index.html#experience">experience</a>
+  </nav>
+</div>
+
+<main class="container">
+
+  <!-- ========== Hero ========== -->
+  <header class="hero">
+    <div class="back-row"><a class="back" href="index.html#experience">← experience</a></div>
+
+    <div class="badge-row" aria-label="키워드">
+      <span class="badge">Internship</span>
+      <span class="badge">LLM</span>
+      <span class="badge">RAG</span>
+      <span class="badge">Workflow</span>
+      <span class="badge">Channel Talk</span>
+    </div>
+
+    <h1>AI 고객상담 자동화 시스템 구축</h1>
+    <p class="tagline">LLM · RAG · Workflow를 활용한 고객 상담 자동화</p>
+    <p class="kind">고용노동부 청년 일경험 지원사업(인턴형) · <span data-bind="duration">8주</span> 인턴십에서 진행한 AI 챗봇 구축</p>
+
+    <div class="js-night-metric" data-variant="hero"></div>
+    <noscript><p class="note">이 페이지의 수치와 일부 인터랙션은 JavaScript가 필요합니다.</p></noscript>
+
+    <div class="sum-grid">
+      <div class="sum">
+        <span class="k">WHY · 만든 이유</span>
+        <ol class="sum-list">
+          <li>업무시간 이외에 챗봇 도입</li>
+          <li>LBS 시스템 철회</li>
+          <li>업무시간에도 챗봇을 사용해 인력 줄이기</li>
+        </ol>
+      </div>
+      <div class="sum">
+        <span class="k">SOLUTION</span>
+        <p>Channel Talk으로 <b>전화 IVR과 채팅봇을 만들어 반복 문의에 먼저 응대</b>하도록 구성했습니다.</p>
+      </div>
+      <div class="sum">
+        <span class="k">MY ROLE</span>
+        <p><b>상담 시나리오·분기·지식 구성, 테스트·개선.</b> LLM·RAG 처리와 워크플로우 엔진은 플랫폼이 제공합니다.</p>
+      </div>
+      <div class="sum" data-needs="night">
+        <span class="k">RESULT</span>
+        <p><b data-bind="night-summary"></b></p>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========== 목차 ========== -->
+  <nav class="toc" aria-label="페이지 목차">
+    <a href="#overview">개요</a>
+    <a href="#why">만든 이유</a>
+    <a href="#role">역할</a>
+    <a href="#deepdive">Deep Dive</a>
+    <a href="#insight">인사이트</a>
+    <a href="#result" data-needs="result">결과</a>
+  </nav>
+
+  <!-- ========== 01 Overview ========== -->
+  <section class="section" id="overview" aria-labelledby="h-overview">
+    <div class="section-head"><span class="idx">01</span><h2 id="h-overview">Overview</h2></div>
+
+    <dl class="meta">
+      <dt>기업(부서)</dt><dd><span data-bind="company">인턴십 기업</span> (<span data-bind="department">디지털 도어락 팀</span>)</dd>
+      <dt>과정</dt><dd><span data-bind="program">2026 유니크 인턴즈 3기</span> · 고용노동부 청년 일경험 지원사업(인턴형)</dd>
+      <dt>직무</dt><dd data-bind="job">IT</dd>
+      <dt>기간</dt><dd><span data-bind="period">2026.08.17 ~ 2026.10.09</span> (<span data-bind="duration">8주</span>)</dd>
+      <dt>플랫폼</dt><dd>Channel Talk</dd>
+      <dt>키워드</dt>
+      <dd class="kw">
+        <span class="badge">LLM</span><span class="badge">RAG</span><span class="badge">Workflow</span><span class="badge">Retrieval</span><span class="badge">AI Chatbot</span>
+      </dd>
+    </dl>
+
+    <h3 class="mini" style="margin-top:0">Background</h3>
+    <p>RAG의 개념은 알고 있었지만, 실제 AI 시스템을 구축하고 운영해본 경험은 없었습니다.</p>
+    <p>인턴으로 고객 상담 자동화가 필요한 기업의 채팅봇 구축 업무를 맡았습니다. 처음 접하는 Channel Talk으로 실제 업무에 쓰이는 AI 상담 시스템을 구현했습니다.</p>
+    <p>처음에는 코딩 없이 LLM·RAG 기반 상담을 구현할 수 있을지 의문이었습니다. 가이드를 참고해 Workflow와 Knowledge를 직접 구성하고 테스트하면서, 복잡한 AI·자동화 기능을 플랫폼이 쉽게 쓸 수 있도록 추상화해 제공한다는 점을 이해했습니다. 이를 통해 LLM과 RAG가 실제 서비스에서 어떻게 쓰이는지 알게 됐습니다.</p>
+
+  </section>
+
+  <!-- ========== 02 Why: 만든 이유 3가지 ========== -->
+  <section class="section" id="why" aria-labelledby="h-why">
+    <div class="section-head"><span class="idx">02</span><h2 id="h-why">Why</h2><span class="sub">챗봇과 IVR을 만든 이유 3가지</span></div>
+
+    <div class="why-grid">
+      <article class="why-card">
+        <span class="n">1</span>
+        <div class="why-body">
+          <h3>업무시간 이외에 챗봇 도입</h3>
+          <p class="why-desc">업무시간 외에도 반복적인 고객 문의가 계속 들어왔습니다.</p>
+          <div class="why-links"><span class="lbl">관련 구축</span><a href="#dd-a">A 전화(IVR)</a><a href="#dd-b">B 채팅봇</a></div>
+        </div>
+      </article>
+      <article class="why-card">
+        <span class="n">2</span>
+        <div class="why-body">
+          <h3>LBS 시스템 철회</h3>
+          <p class="why-desc">통신사 위치기반 서비스(LBS)로 지역 대리점에 자동 연결하던 방식이 철회돼, 이를 대신할 방안이 필요했습니다.</p>
+          <div class="why-links"><span class="lbl">관련 구축</span><a href="#dd-c">C 긴급상황 대응</a></div>
+        </div>
+      </article>
+      <article class="why-card">
+        <span class="n">3</span>
+        <div class="why-body">
+          <h3>업무시간에도 챗봇을 사용해 인력 줄이기</h3>
+          <p class="why-desc">업무시간에도 반복 문의는 챗봇이 먼저 응대하게 해, 상담 인력의 반복 업무 부담을 줄이려 했습니다.</p>
+          <div class="why-links"><span class="lbl">관련 구축</span><a href="#dd-b">B 채팅봇</a><a href="#dd-a">A 전화(IVR)</a></div>
+        </div>
+      </article>
+    </div>
+
+    <p class="note goal-label">GOAL</p>
+    <blockquote class="goal">반복적인 문의에 AI가 우선 대응하도록 하여 상담 인력의 부담을 줄이고, 고객이 상담 가능 시간 외에도 필요한 정보를 즉시 확인할 수 있는 환경을 구축한다.</blockquote>
+  </section>
+
+  <!-- ========== 03 My Role ========== -->
+  <section class="section" id="role" aria-labelledby="h-role">
+    <div class="section-head"><span class="idx">03</span><h2 id="h-role">My Role</h2></div>
+
+    <div class="compare2">
+      <div class="col-box me">
+        <h3>What I did</h3>
+        <span class="cap">내가 한 일</span>
+        <ul>
+          <li>상담 시나리오 설계</li>
+          <li>조건·분기 구성 (Workflow)</li>
+          <li>Knowledge·Document 구성</li>
+          <li>응답 테스트와 개선</li>
+        </ul>
+      </div>
+      <div class="col-box">
+        <h3>What the platform provides</h3>
+        <span class="cap">Channel Talk이 제공한 것</span>
+        <ul>
+          <li>LLM·RAG 처리</li>
+          <li>워크플로우 엔진</li>
+        </ul>
+        <p class="note" style="margin:10px 0 0">AI 모델과 RAG 파이프라인은 직접 개발하지 않았습니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 04 Deep Dive ========== -->
+  <section class="section" id="deepdive" aria-labelledby="h-deepdive">
+    <div class="section-head"><span class="idx">04</span><h2 id="h-deepdive">Deep Dive</h2><span class="sub">구축 내용</span></div>
+    <p class="note">플랫폼이 제공하는 기능과 내가 직접 한 일을 항목마다 나눠 적었습니다.</p>
+
+    <!-- 스크린샷 규칙: img/chatbot/NN-이름.webp, 비율 16:9(예: 1600x900), 마스킹 후 삽입.
+         교체 방법: .shot-ph 블록을 <img src="../img/chatbot/01-chatbot-workflow.webp" alt="설명" loading="lazy"> 로 바꾸세요. -->
+
+    <!-- A -->
+    <details class="dd" id="dd-a">
+      <summary>
+        <span class="letter">A</span>
+        <span class="ttl"><b>전화(IVR) ARS</b><span>시간대에 따라 안내가 나뉘는 전화 자동응답</span></span>
+        <span class="status" data-status="ivr" hidden></span>
+      </summary>
+      <div class="dd-body">
+        <dl class="who-rows">
+          <div><dt>플랫폼 기능</dt><dd>전화 트리거, 브랜치</dd></div>
+          <div class="me"><dt>내가 한 일</dt><dd>시간대 3구간 분기 설계, 메뉴·안내 멘트 설계</dd></div>
+        </dl>
+        <ul>
+          <li>트리거는 <b>고객이 전화를 걸었을 때</b>입니다.</li>
+          <li>시간대를 <b>비운영시간 / 점심시간 / 운영시간</b> 3구간으로 나눴습니다.</li>
+          <li>브랜치를 2단계로 중첩했습니다. 좁은 조건(점심시간)을 먼저, 넓은 조건(운영시간)을 나중에 검사합니다. 순서를 바꾸면 점심시간이 운영시간에 포함돼 걸러지지 않습니다.</li>
+          <li>메뉴는 A/S 접수, 비용·기간, 설정·설치, 구입, 챗봇 링크, 상담사 연결, 다시듣기로 구성했습니다. 상담사 연결 시 안내·부재중 처리 멘트도 설계했습니다.</li>
+        </ul>
+        <h4>메뉴 개편안 <span class="status" data-status="ivrMenuProposal" hidden></span></h4>
+        <p>검토 중인 제안입니다. 선택지가 많아 급한 고객이 불편하고 챗봇 도입 취지가 퇴색되므로, 챗봇 링크를 앞으로 올리고 상담 연결 메뉴를 통합하는 안입니다.</p>
+      </div>
+    </details>
+
+    <!-- B -->
+    <details class="dd" id="dd-b">
+      <summary>
+        <span class="letter">B</span>
+        <span class="ttl"><b>채팅봇 (카카오톡 연동 포함)</b><span>새 상담 시작부터 카테고리별 AI 응대까지</span></span>
+        <span class="status" data-status="chatbot" hidden></span>
+      </summary>
+      <div class="dd-body">
+        <dl class="who-rows">
+          <div><dt>플랫폼 기능</dt><dd>새 상담 트리거, 메시지 보내기·브랜치 단계, AI 응대, 카카오톡 상담톡 연동</dd></div>
+          <div class="me"><dt>내가 한 일</dt><dd>단계 구성, 카테고리별 답변 가이드 작성, 연동·시작 흐름 구성</dd></div>
+        </dl>
+        <ul>
+          <li>트리거는 <b>새 상담을 시작할 때 챗봇</b>입니다. 첫 단계는 메시지 보내기여야 하고 브랜치를 바로 넣을 수 없어서, 다음 단계에서 운영시간 브랜치를 걸었습니다.</li>
+          <li>카테고리(A/S 접수, 비용, 설정, 설치, 구입)별로 AI 응대와 답변 가이드(500자 제한)를 작성했습니다.</li>
+          <li>카카오톡 상담톡 연동, 커스텀 메뉴, 링크로 메시지 입력 없이 인사말부터 시작되게 구성했습니다.</li>
+        </ul>
+        <figure class="shot">
+          <div class="shot-ph" role="img" aria-label="챗봇 Workflow 구성 화면 (마스킹 이미지 준비 중)">
+            <b>스크린샷 자리 · 16:9</b><span>img/chatbot/01-chatbot-workflow.webp</span>
+          </div>
+          <figcaption>챗봇 Workflow (운영시간 브랜치)</figcaption>
+        </figure>
+        <figure class="shot">
+          <div class="shot-ph" role="img" aria-label="카카오톡 연동 인사말 시작 화면 (마스킹 이미지 준비 중)">
+            <b>스크린샷 자리 · 16:9</b><span>img/chatbot/02-kakao-greeting.webp</span>
+          </div>
+          <figcaption>카카오톡 연동 · 인사말부터 시작</figcaption>
+        </figure>
+      </div>
+    </details>
+
+    <!-- C -->
+    <details class="dd" id="dd-c">
+      <summary>
+        <span class="letter">C</span>
+        <span class="ttl"><b>긴급상황 대응</b><span>철회된 지역 대리점 자동 연결을 대체하는 방안</span></span>
+        <span class="status" data-status="emergency" hidden></span>
+      </summary>
+      <div class="dd-body">
+        <dl class="who-rows">
+          <div><dt>플랫폼 기능</dt><dd>별도 채널, 전용 워크플로우, ALF 응대 액션</dd></div>
+          <div class="me"><dt>내가 한 일</dt><dd>대안 비교, 분리 구조 진행, 지역 안내·되묻기 규칙 작성</dd></div>
+        </dl>
+        <ul>
+          <li><b>배경</b> — 통신사 위치기반 서비스(LBS)로 지역 대리점에 자동 연결하던 방식이 철회됐습니다.</li>
+          <li><b>대안 비교</b> — 아래 다섯 가지를 비용·구현 난이도·고객 경험 기준으로 비교했습니다.</li>
+        </ul>
+        <div class="chips" style="margin:0 0 12px">
+          <span class="chip">GPS 웹페이지</span><span class="chip">통신사 재계약</span><span class="chip">지역번호 분기</span><span class="chip">IVR 키패드 트리</span><span class="chip">당직자 직통 연결</span>
+        </div>
+        <ul>
+          <li><b>진행</b> — 별도 채널과 전용 워크플로우로 분리하는 안으로 진행했습니다. 지역을 말하면 AI가 대리점·유통점을 안내합니다. 동명 지역(광주, 서구 등)은 시·도를 되묻는 규칙을 넣었습니다.</li>
+        </ul>
+        <h4>막혔던 점</h4>
+        <ul>
+          <li>ALF 응대 액션 뒤에는 다른 액션을 붙일 수 없는 제약</li>
+          <li>카카오 안에서 특정 워크플로우로 직접 연결하는 링크를 만들 수 없는 제약</li>
+        </ul>
+        <figure class="shot">
+          <div class="shot-ph" role="img" aria-label="긴급상황 전용 워크플로우 화면 (마스킹 이미지 준비 중)">
+            <b>스크린샷 자리 · 16:9</b><span>img/chatbot/03-emergency-workflow.webp</span>
+          </div>
+          <figcaption>긴급상황 전용 Workflow (대리점 정보 마스킹)</figcaption>
+        </figure>
+      </div>
+    </details>
+
+    <!-- D -->
+    <details class="dd" id="dd-d">
+      <summary>
+        <span class="letter">D</span>
+        <span class="ttl"><b>지식(RAG 입력 데이터) 구성</b><span>규칙과 지식을 나누고, 데이터 정합성을 관리</span></span>
+        <span class="status" data-status="knowledge" hidden></span>
+      </summary>
+      <div class="dd-body">
+        <dl class="who-rows">
+          <div><dt>플랫폼 기능</dt><dd>지식 참조 기능, RAG 처리</dd></div>
+          <div class="me"><dt>내가 한 일</dt><dd>규칙·지식 역할 설계, 문서 재작성·변환, 데이터 비교·병합·검증</dd></div>
+        </dl>
+        <ul>
+          <li><b>규칙과 지식을 분리</b> — 규칙(행동 지시문)과 지식(근거 데이터)의 역할을 나눠 설계했습니다.</li>
+          <li><b>지식이 참조되려면 세 가지가 맞아야 했습니다</b> — 아티클 공개 상태 / 스페이스의 ALF 사용 ON / 지식 목록에서 '참조'. 직접 겪으며 확인했습니다.</li>
+          <li><b>문서 구조가 답변에 영향</b>을 줘서, 표 대신 읽기 쉬운 텍스트 블록으로 재작성했습니다.</li>
+          <li><b>원본 변환</b> — PDF·엑셀 원본(제품 설정<span data-count="setupModels" data-pre=" " data-post="개 모델"></span>, 제품 설치<span data-count="installModels" data-pre=" " data-post="개 모델"></span>)을 읽을 수 있는 텍스트로 변환했습니다.</li>
+          <li><b>대리점 데이터 3단계 비교·병합</b> — 원본 → 부분 목록 → 회사 최종본을 비교하고 병합했습니다. 부분 목록 기준 삭제분 중 일부<span data-count="restoredShops" data-pre=" (" data-post="곳)"></span>가 최종본에 살아 있어 복원했고, 다중 번호 항목이 통째로 삭제될 뻔한 오류를 검증 과정에서 잡았습니다.</li>
+        </ul>
+        <p><b>교훈</b> — 지식베이스는 한 번 만들고 끝나는 게 아니라 정합성 관리가 필요합니다.</p>
+        <figure class="shot">
+          <div class="shot-ph" role="img" aria-label="지식 목록과 참조 설정 화면 (마스킹 이미지 준비 중)">
+            <b>스크린샷 자리 · 16:9</b><span>img/chatbot/04-knowledge-list.webp</span>
+          </div>
+          <figcaption>지식 목록과 참조 설정</figcaption>
+        </figure>
+      </div>
+    </details>
+
+    <!-- E -->
+    <details class="dd" id="dd-e">
+      <summary>
+        <span class="letter">E</span>
+        <span class="ttl"><b>문서화</b><span>인수인계 매뉴얼, 운영 기획서, 이슈 정리 문서</span></span>
+        <span class="status" data-status="docs" hidden></span>
+      </summary>
+      <div class="dd-body">
+        <dl class="who-rows">
+          <div class="me"><dt>내가 한 일</dt><dd>문서 작성, 이슈 분류 관리</dd></div>
+        </dl>
+        <ul>
+          <li>인수인계 매뉴얼, 운영 기획서, 이슈 정리 문서를 작성했습니다.</li>
+          <li>이슈를 <b>해결 / 진행중 / 미해결</b>로 분류해 관리했습니다.</li>
+        </ul>
+        <figure class="shot">
+          <div class="shot-ph" role="img" aria-label="이슈 정리 문서 화면 (마스킹 이미지 준비 중)">
+            <b>스크린샷 자리 · 16:9</b><span>img/chatbot/05-issue-doc.webp</span>
+          </div>
+          <figcaption>이슈 정리 문서 (해결 / 진행중 / 미해결)</figcaption>
+        </figure>
+      </div>
+    </details>
+  </section>
+
+  <!-- ========== 참고: RAG 개념 (접이식) ========== -->
+  <section class="section" id="rag-ref" aria-labelledby="h-ragref">
+    <details class="dd ref">
+      <summary>
+        <span class="ttl"><b id="h-ragref">참고 · RAG 개념 구조</b><span>일반적인 RAG와 Channel Talk 방식의 차이 (학습한 내용)</span></span>
+      </summary>
+      <div class="dd-body">
+        <span class="label-chip">일반적인 RAG 개념 구조 · 학습한 내용이며 Channel Talk의 내부 구조가 아닙니다</span>
+
+    <div class="rag">
+      <p class="lane-label">문서 준비 단계</p>
+      <div class="lane" role="group" aria-label="문서 준비 단계">
+        <button type="button" class="rag-step" aria-pressed="false" data-title="Document" data-desc="원본 자료입니다. 제품 설명서나 안내 문서처럼 답변의 근거가 될 문서를 말합니다."><span class="num">1</span>Document</button><span class="arr" aria-hidden="true">→</span>
+        <button type="button" class="rag-step" aria-pressed="false" data-title="Parsing" data-desc="문서에서 글자와 구조를 읽어 텍스트로 꺼내는 단계입니다."><span class="num">2</span>Parsing</button><span class="arr" aria-hidden="true">→</span>
+        <button type="button" class="rag-step" aria-pressed="false" data-title="Chunking" data-desc="긴 텍스트를 검색하기 좋은 작은 조각으로 나누는 단계입니다."><span class="num">3</span>Chunking</button><span class="arr" aria-hidden="true">→</span>
+        <button type="button" class="rag-step" aria-pressed="false" data-title="Embedding" data-desc="각 조각의 의미를 숫자 형태로 바꿔, 의미가 비슷한 조각을 찾을 수 있게 하는 단계입니다."><span class="num">4</span>Embedding</button><span class="arr" aria-hidden="true">→</span>
+        <button type="button" class="rag-step" aria-pressed="false" data-title="Indexing" data-desc="변환한 조각을 나중에 빠르게 검색할 수 있도록 저장하고 정리하는 단계입니다."><span class="num">5</span>Indexing</button>
+      </div>
+
+      <p class="bridge">Indexing으로 정리된 조각을 Retrieval 단계에서 검색합니다.</p>
+
+      <p class="lane-label">질문 응답 단계</p>
+      <div class="lane" role="group" aria-label="질문 응답 단계">
+        <button type="button" class="rag-step" aria-pressed="false" data-title="User Query" data-desc="사용자의 질문입니다. Retrieval 단계로 들어가 관련 조각을 찾는 기준이 됩니다."><span class="num">Q</span>User Query</button><span class="arr" aria-hidden="true">→</span>
+        <button type="button" class="rag-step" aria-pressed="false" data-title="Retrieval" data-desc="질문과 의미가 가까운 조각을 찾아오는 단계입니다."><span class="num">6</span>Retrieval</button><span class="arr" aria-hidden="true">→</span>
+        <button type="button" class="rag-step" aria-pressed="false" data-title="Context + LLM" data-desc="찾아온 조각(Context)을 질문과 함께 LLM에 전달하는 단계입니다."><span class="num">7</span>Context + LLM</button><span class="arr" aria-hidden="true">→</span>
+        <button type="button" class="rag-step" aria-pressed="false" data-title="Answer" data-desc="LLM이 전달받은 내용을 근거로 답변을 만드는 단계입니다."><span class="num">8</span>Answer</button>
+      </div>
+
+      <div class="rag-panel" id="rag-panel" role="status" aria-live="polite">
+        <strong id="rag-panel-title"></strong>
+        <p id="rag-panel-desc"></p>
+      </div>
+    </div>
+        <h3 class="mini">Traditional RAG vs Channel Talk</h3>
+        <div class="vs">
+      <div class="vs-col">
+        <h3>Traditional RAG</h3>
+        <span class="who">Developer가 직접 구축</span>
+        <div class="chips">
+          <span class="chip">Parsing</span><span class="chip">Chunking</span><span class="chip">Embedding</span>
+          <span class="chip">Vector DB</span><span class="chip">Retrieval</span><span class="chip">LLM</span>
+        </div>
+      </div>
+      <div class="vs-col">
+        <h3>Channel Talk</h3>
+        <span class="who">User가 Document·Knowledge를 구성</span>
+        <div class="vs-flow">
+          <div class="vs-me">Document / Knowledge 구성 <small class="note">(내가 한 일)</small></div>
+          <div class="arrow" aria-hidden="true">↓</div>
+          <div class="blackbox"><b>플랫폼이 RAG 처리</b><small>내부 구현은 확인하지 않음</small></div>
+          <div class="arrow" aria-hidden="true">↓</div>
+          <div class="vs-me">답변</div>
+        </div>
+      </div>
+    </div>
+    <p class="conclusion">복잡한 RAG 인프라를 직접 구축하기보다, 상담에 필요한 Document와 Knowledge를 구성하는 데 집중할 수 있었습니다.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ========== 05 Technical Insight ========== -->
+  <section class="section" id="insight" aria-labelledby="h-insight">
+    <div class="section-head"><span class="idx">05</span><h2 id="h-insight">Technical Insight</h2></div>
+    <div class="insights">
+      <div class="ins"><span class="n">01</span><h3>LLM/RAG의 실제 적용</h3><p>이론으로만 알던 RAG를 실제 기업 상담에 적용하며, AI 기술이 서비스에 연결되는 방식을 경험했습니다.</p></div>
+      <div class="ins"><span class="n">02</span><h3>RAG Pipeline 이해</h3><p>Document가 그대로 LLM에 전달되는 것이 아니라, Parsing, Chunking, Embedding, Indexing, Retrieval을 거쳐 관련 정보가 Context로 전달되는 구조를 이해했습니다.</p></div>
+      <div class="ins"><span class="n">03</span><h3>Workflow 기반 서비스 구성</h3><p>조건과 분기를 시각적으로 구성해 시나리오를 설계하고, 테스트를 거쳐 서비스에 맞게 수정했습니다.</p></div>
+      <div class="ins"><span class="n">04</span><h3>서비스 관점의 개발 경험</h3><p>요구사항 파악 → 설계 → 구현 → 테스트 → 문제 수정 → 재검증 → 운영의 흐름을 경험했습니다.</p></div>
+      <div class="ins"><span class="n">05</span><h3>데이터 품질</h3><p>RAG의 답변 품질은 지식 데이터의 구조와 정합성에 크게 좌우된다는 것을, 대리점·제품 데이터를 정제하며 확인했습니다.</p></div>
+    </div>
+    <p class="note" style="margin-top:12px">02번은 일반적인 RAG 개념 기준이며, Channel Talk의 내부 구조를 확인한 것은 아닙니다.</p>
+  </section>
+
+  <!-- ========== 06 Result ========== -->
+  <section class="section" id="result" aria-labelledby="h-result" data-needs="result">
+    <div class="section-head"><span class="idx">06</span><h2 id="h-result">Result</h2></div>
+    <div class="js-night-metric" data-variant="result"></div>
+    <div class="xm-grid" id="extra-metrics"></div>
+    <p class="caution" id="resolution-caution" hidden>상담원 연결을 제한한 구조라 해결률이 높게 나올 수 있어 다른 지표와 함께 해석합니다.</p>
+  </section>
+
+  <footer>&copy; 2026 김정환.</footer>
+</main>
+
+<script src="../src/data/chatbot-data.js"></script>
+<script src="../src/bind-config.js"></script>
+<script src="../src/project-chatbot.js"></script>
+</body>
+</html>

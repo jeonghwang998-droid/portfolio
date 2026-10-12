@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Skin AI — 김정환의 portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fdfdfc;
+    --ink: #1c1c1a;
+    --ink-soft: #4a4a46;
+    --ink-dim: #9b9b95;
+    --line: #ebebe6;
+    --card: #ffffff;
+    --radius: 14px;
+    --font-mono: "JetBrains Mono", ui-monospace, monospace;
+    --font-body: "Inter", -apple-system, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); }
+  body { font-family: var(--font-body); -webkit-font-smoothing: antialiased; line-height: 1.68; }
+  a { color: inherit; text-decoration: none; }
+  .container { max-width: 900px; margin: 0 auto; padding: 0 40px; }
+
+  .topline {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 22px 40px; font-family: var(--font-mono); font-size: 11.5px;
+    color: var(--ink-dim); border-bottom: 1px solid var(--line);
+  }
+  .topline nav { display: flex; gap: 22px; }
+  .topline nav a:hover { color: var(--ink); }
+  .back { color: var(--ink-dim); }
+  .back:hover { color: var(--ink); }
+
+  /* ---------- 헤더: 한눈에 훑는 영역 ---------- */
+  .hero { padding: 40px 0 32px; }
+  .back-row { margin-bottom: 20px; font-family: var(--font-mono); font-size: 12.5px; }
+
+  .badge-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .badge {
+    font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-soft);
+    background: var(--bg); border: 1px solid var(--line); border-radius: 20px; padding: 3px 10px;
+  }
+
+  h1 { font-size: clamp(1.9rem, 4.2vw, 2.6rem); font-weight: 700; margin: 0 0 8px; letter-spacing: -0.015em; }
+  .tagline { color: var(--ink-soft); font-size: 16px; margin: 0 0 22px; max-width: 62ch; }
+
+  .disclaimer {
+    font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-dim);
+    margin-bottom: 36px;
+  }
+
+  /* ---------- 섹션 네비 (README 목차처럼) ---------- */
+  .toc {
+    display: flex; gap: 4px; flex-wrap: wrap;
+    position: sticky; top: 0; background: rgba(253,253,252,0.94); backdrop-filter: blur(6px);
+    padding: 12px 0; border-bottom: 1px solid var(--line); margin-bottom: 40px; z-index: 5;
+  }
+  .toc a {
+    font-family: var(--font-mono); font-size: 12px; color: var(--ink-dim);
+    padding: 6px 12px; border-radius: 20px; transition: background .15s, color .15s;
+  }
+  .toc a:hover { background: var(--card); color: var(--ink); border: 1px solid var(--line); padding: 5px 11px; }
+  .toc a.active { background: var(--ink); color: var(--bg); }
+
+  /* ---------- 본문 ---------- */
+  .section { margin-bottom: 52px; scroll-margin-top: 64px; }
+  .section-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 16px; }
+  .section-head .idx { font-family: var(--font-mono); font-size: 12px; color: var(--ink-dim); }
+  .section-head h2 { font-size: 18px; font-weight: 700; margin: 0; }
+
+  .section p { color: var(--ink-soft); font-size: 14.5px; margin: 0 0 12px; }
+  .section ul { margin: 0 0 6px; padding-left: 20px; }
+  .section li { color: var(--ink-soft); font-size: 14.5px; margin-bottom: 6px; }
+  .section li b, .section p b { color: var(--ink); font-weight: 600; }
+  code {
+    font-family: var(--font-mono); font-size: 12.5px; background: var(--card);
+    border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px; color: var(--ink);
+  }
+
+  .diagram {
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 20px; margin: 4px 0 20px; text-align: center;
+  }
+  .diagram img { max-width: 100%; height: auto; }
+  .diagram .cap { font-family: var(--font-mono); font-size: 11px; color: var(--ink-dim); margin-top: 10px; }
+  .diagram .mermaid { display: flex; justify-content: center; }
+
+  /* 회고 섹션 — 역할/문제/해결/결과 */
+  .retro-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .retro-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 18px 20px; min-height: 110px;
+  }
+  .retro-card .label {
+    font-family: var(--font-mono); font-size: 11px; color: var(--ink-dim);
+    display: block; margin-bottom: 10px; letter-spacing: 0.02em;
+  }
+  .retro-card .fill-todo {
+    font-family: var(--font-mono); font-size: 12px; color: var(--ink-dim);
+    border: 1px dashed var(--line); border-radius: 8px; padding: 10px 12px;
+  }
+  .retro-card .role-title { font-weight: 700; font-size: 14.5px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .retro-card .cover-badge {
+    font-family: var(--font-mono); font-weight: 500; font-size: 10.5px; color: var(--ink-soft);
+    background: var(--bg); border: 1px solid var(--line); border-radius: 20px; padding: 2px 9px;
+  }
+  .retro-card .cover-tag {
+    font-family: var(--font-mono); font-size: 9.5px; font-weight: 500; color: var(--ink-dim);
+    border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; margin-right: 6px;
+    vertical-align: 1px; letter-spacing: 0.02em;
+  }
+  .retro-card ul.retro-list { margin: 0; padding-left: 18px; }
+  .retro-card ul.retro-list li { font-size: 13px; color: var(--ink-soft); margin-bottom: 6px; }
+  .retro-card ul.retro-list li:last-child { margin-bottom: 0; }
+  @media (max-width: 640px) { .retro-grid { grid-template-columns: 1fr; } }
+
+  .stack-row { display: grid; grid-template-columns: 110px 1fr 70px; gap: 12px; background: var(--card); padding: 10px 14px; align-items: center; }
+  .pipeline { display: flex; flex-direction: column; gap: 0; margin-bottom: 8px; }
+  .pipe-step {
+    display: flex; gap: 14px; align-items: flex-start;
+    padding: 12px 0; border-bottom: 1px solid var(--line);
+  }
+  .pipe-step:last-child { border-bottom: none; }
+  .pipe-step .n {
+    font-family: var(--font-mono); font-size: 11px; color: var(--ink-dim);
+    width: 22px; height: 22px; border: 1px solid var(--line); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
+  }
+  .pipe-step .t { font-weight: 600; font-size: 14px; margin-bottom: 2px; }
+  .pipe-step .d { font-size: 13px; color: var(--ink-soft); }
+
+  .why-box {
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 18px 20px; margin-top: 8px;
+  }
+  .why-box .label { font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-dim); margin-bottom: 8px; display: block; }
+  .why-box p { margin: 0; }
+
+  table.data { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 8px; }
+  table.data th { text-align: left; font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-dim); font-weight: 500; padding: 8px 10px; border-bottom: 1px solid var(--ink); }
+  table.data td { padding: 8px 10px; border-bottom: 1px solid var(--line); color: var(--ink-soft); }
+  table.data td.mono { font-family: var(--font-mono); font-size: 12px; color: var(--ink); }
+
+  .todo {
+    color: var(--ink-dim); font-family: var(--font-mono); font-size: 12px;
+    border: 1px dashed var(--line); border-radius: 10px; padding: 12px 14px;
+  }
+
+  footer { padding: 40px 0 50px; font-family: var(--font-mono); font-size: 11px; color: var(--ink-dim); border-top: 1px solid var(--line); }
+
+  @media (max-width: 700px) {
+    .container, .topline { padding-left: 22px; padding-right: 22px; }
+    .stack-row { grid-template-columns: 1fr; gap: 4px; }
+    .stack-row .port { text-align: left; }
+    .toc { overflow-x: auto; flex-wrap: nowrap; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topline">
+  <span>~$ whoami kjh2853</span>
+  <nav>
+    <a href="index.html">home</a>
+    <a href="index.html#projects">projects</a>
+    <a href="index.html#contact">contact</a>
+  </nav>
+</div>
+
+<div class="container">
+
+  <div class="hero">
+    <div class="back-row"><a class="back" href="index.html#projects">← projects</a></div>
+
+    <div class="badge-row">
+      <span class="badge">AI / Computer Vision</span>
+      <span class="badge">Full Stack</span>
+    </div>
+
+    <h1>Skin AI</h1>
+    <p class="tagline">얼굴 피부 사진 한 장으로 11종 피부질환을 분류하고, AI가 임상 소견까지 설명해주는 학습용 진단 보조 플랫폼.</p>
+
+    <div class="disclaimer">⚠ 의료 면책 — 교육·연구 목적의 보조 도구이며, 확정 진단은 피부과 전문의 대면 진료로만 가능합니다.</div>
+  </div>
+
+  <div class="toc">
+    <a href="#overview">개요</a>
+    <a href="#architecture">아키텍처</a>
+    <a href="#pipeline">AI 파이프라인</a>
+    <a href="#limits">제한사항</a>
+    <a href="#data">학습 데이터</a>
+    <a href="#retro">회고</a>
+  </div>
+
+  <div class="section" id="overview">
+    <div class="section-head"><span class="idx">01</span><h2>개요</h2></div>
+    <p>피부과 전공의·의대생이 <b>AI 분류 결과와 실제 진단을 비교하며 학습</b>할 수 있도록 만든 서비스입니다. 사진을 올리면 DenseNet121 / EfficientNet-B3가 질환을 분류하고, Grad-CAM으로 판단 근거를 시각화하고, Claude가 임상 리포트를 자연어로 생성합니다.</p>
+    <ul>
+      <li><b>분류 대상 11종</b> — 건선, 아토피피부염, 여드름, 광선각화증, 기저세포암, 멜라닌세포모반, 악성흑색종, 지루각화증, 편평세포암, 피부섬유종, 혈관종</li>
+      <li><b>핵심 기능</b> — 이미지 분류 + Grad-CAM 히트맵 + LLM 임상 리포트 + 멀티턴 채팅 + 분석 이력 관리</li>
+    </ul>
+  </div>
+
+  <div class="section" id="architecture">
+    <div class="section-head"><span class="idx">02</span><h2>시스템 아키텍처</h2></div>
+    <div class="diagram">
+      <pre class="mermaid">
+flowchart TD
+    Client(["브라우저 · Client"])
+
+    subgraph Backend["Express Backend  :3000"]
+        direction LR
+        BAuth["auth.js\nJWT 인증 · 비밀번호 재설정"]
+        BAnalyze["analyze.js\nmulter → 매직바이트 검증 → EXIF masking"]
+        BRecords["records.js · users.js\n분석 이력 CRUD · 사용자 관리"]
+    end
+
+    subgraph Flask["Flask AI Service  :5001"]
+        direction LR
+        FOOD["① OOD Filter"]
+        FModel["② DenseNet121 / EfficientNet-B3\nTop-1 · Top-3 + 신뢰도"]
+        FGradCAM["③ Grad-CAM\n히트맵 시각화"]
+        FReport["④ LLM Report\n자연어 임상 소견"]
+        FOOD --> FModel --> FGradCAM --> FReport
+    end
+
+    subgraph Supabase["Supabase"]
+        direction LR
+        DB[("PostgreSQL\n사용자 · 분석 이력")]
+        S3[("S3 Storage\n이미지 · Grad-CAM")]
+    end
+
+    subgraph ClaudeAPI["Claude API  ─  Anthropic"]
+        direction LR
+        Haiku["claude-haiku\nOOD Vision 판별"]
+        Sonnet["claude-sonnet\n리포트 생성 · 멀티턴 채팅"]
+    end
+
+    Client -->|"이미지 업로드 / 이력 조회"| Backend
+    Backend -->|"POST /predict"| Flask
+    Backend <-->|"읽기 · 쓰기"| DB
+    Backend <-->|"저장 · 조회"| S3
+    FOOD <-.->|"Vision API"| Haiku
+    FReport <-.->|"Messages API"| Sonnet
+      </pre>
+    </div>
+    <table class="data">
+      <tr><th>서비스</th><th>스택</th><th>포트</th></tr>
+      <tr><td class="mono">Backend</td><td>Node.js / Express</td><td class="mono">3000</td></tr>
+      <tr><td class="mono">AI Service</td><td>Python / Flask + PyTorch</td><td class="mono">5001</td></tr>
+      <tr><td class="mono">Frontend</td><td>Vanilla JS / HTML / CSS</td><td class="mono">백엔드 서빙</td></tr>
+      <tr><td class="mono">DB / Storage</td><td>Supabase (PostgreSQL + S3)</td><td class="mono">—</td></tr>
+    </table>
+  </div>
+
+  <div class="section" id="pipeline">
+    <div class="section-head"><span class="idx">03</span><h2>AI 추론 파이프라인</h2></div>
+    <div class="pipeline">
+      <div class="pipe-step"><span class="n">1</span><div><div class="t">OOD 필터</div><div class="d">Claude Haiku vision이 비피부 이미지를 사전 거절</div></div></div>
+      <div class="pipe-step"><span class="n">2</span><div><div class="t">DenseNet121 추론</div><div class="d">11종 분류 + top-3 후보 + 신뢰도 산출</div></div></div>
+      <div class="pipe-step"><span class="n">3</span><div><div class="t">Grad-CAM</div><div class="d">모델이 어디를 보고 판단했는지 히트맵으로 시각화</div></div></div>
+      <div class="pipe-step"><span class="n">4</span><div><div class="t">리포트 생성</div><div class="d">Claude Sonnet이 구조화된 임상 소견 JSON 생성</div></div></div>
+      <div class="pipe-step"><span class="n">5</span><div><div class="t">멀티턴 채팅</div><div class="d">Claude Haiku가 후속 질문에 응답</div></div></div>
+    </div>
+    <div class="why-box">
+      <span class="label">WHY — OOD 필터를 넣은 이유</span>
+      <p>DenseNet은 입력을 반드시 11종 중 하나로 분류하는 폐쇄형 분류기라, 강아지 사진도 <b>아토피피부염 86% 신뢰도</b>로 오분류했습니다. 신뢰도 임계값·엔트로피 같은 일반적인 방법이 모두 실패해서, 추론 전 Claude Haiku vision으로 "피부 이미지인가"를 먼저 판별하도록 했습니다. 추가 레이턴시는 <b>500~900ms</b>.</p>
+    </div>
+  </div>
+
+  <div class="section" id="limits">
+    <div class="section-head"><span class="idx">04</span><h2>현재 제한사항</h2></div>
+    <ul>
+      <li>모델 체크포인트(<code>*.pth</code>) 미포함 — 별도 학습 필요</li>
+      <li>학습 원본 데이터 미포함 — AI Hub 데이터는 라이선스상 별도 신청 필요</li>
+      <li>LLM 기능은 <code>ANTHROPIC_API_KEY</code> 설정 시에만 활성화</li>
+    </ul>
+  </div>
+
+  <div class="section" id="data">
+    <div class="section-head"><span class="idx">05</span><h2>학습 데이터</h2></div>
+    <table class="data">
+      <tr><th>데이터셋</th><th>클래스</th><th>비고</th></tr>
+      <tr><td class="mono">AI Hub 08-14 / 08-15</td><td class="mono">6종 / 15종</td><td>합성 데이터 12,000장 / 15,000장</td></tr>
+      <tr><td class="mono">DermNet NZ</td><td class="mono">3종</td><td>공개 임상 데이터</td></tr>
+      <tr><td class="mono">ISIC 2019</td><td class="mono">8종</td><td>공개 임상 데이터</td></tr>
+      <tr><td class="mono">HAM10000</td><td class="mono">7종</td><td>공개 임상 데이터</td></tr>
+    </table>
+    <p>여러 출처를 <code>DS_unified</code> 11종 클래스 체계로 통합해 학습.</p>
+  </div>
+
+  <div class="section" id="screenshots">
+    <div class="section-head"><span class="idx">06</span><h2>스크린샷</h2></div>
+    <div class="todo">TODO — 분석 화면 / 리포트 결과 / 대시보드 스크린샷 추가</div>
+  </div>
+
+  <div class="section" id="retro">
+    <div class="section-head"><span class="idx">07</span><h2>회고</h2></div>
+    <div class="retro-grid">
+      <div class="retro-card">
+        <span class="label">ROLE — 역할</span>
+        <div class="role-title">Frontend Leader <span class="cover-badge">+ Backend / DB 커버</span></div>
+        <ul class="retro-list">
+          <li>프론트엔드 팀 리드 — UI/UX 설계 및 구현 총괄</li>
+          <li>JS 로직 구축 — 클라이언트 상태 관리, 서버 통신, 인터랙션 구현</li>
+          <li><span class="cover-tag">cover</span>백엔드 서버 구축 — Node.js/Express API 설계 및 구현</li>
+          <li><span class="cover-tag">cover</span>데이터베이스 설계 및 구축 — Supabase(PostgreSQL) 스키마 설계·구현, 이미지 Storage 구조 설계</li>
+        </ul>
+      </div>
+      <div class="retro-card">
+        <span class="label">PROBLEM — 문제</span>
+        <div class="role-title">운영·유지보수 및 하드코딩 문제</div>
+        <ul class="retro-list">
+          <li>팀원들이 값을 코드에 직접 박아 넣는 하드코딩이 많아, 설정 하나 바꾸려 해도 코드 전체를 뒤져야 했음</li>
+          <li>환경별로 바뀌는 값들이 상수/설정으로 분리돼 있지 않아 운영 중 값 변경 및 유지보수가 번거로움</li>
+          <li>API 명세서 없이 개발 — 엔드포인트 위치·스펙이 문서화돼 있지 않아 협업 중 혼선 발생</li>
+          <li>데이터베이스 권한 부여가 제대로 안 돼 있어 접근 범위 관련 이슈 발생</li>
+        </ul>
+      </div>
+      <div class="retro-card">
+        <span class="label">SOLUTION — 해결</span>
+        <div class="role-title">상수 분리 및 문서화로 정리</div>
+        <ul class="retro-list">
+          <li>코드 곳곳에 흩어져 있던 하드코딩 값을 <code>constants</code> 파일로 전부 이관 — 값 하나 바꿀 때 코드 전체를 뒤지지 않고 한 곳만 수정하면 되도록 개선</li>
+          <li>환경별로 달라지는 값은 <code>.env</code> 설정으로 분리해 운영/개발 환경 전환 시 코드 수정 없이 값만 교체되도록 구성</li>
+          <li>API 문서화 시작 — 엔드포인트·요청/응답 형식을 정리해 팀원들이 코드를 뒤지지 않고도 API 스펙을 바로 확인할 수 있도록 함</li>
+          <li>데이터베이스 권한을 역할(전공의/학생/관리자)별로 재설계해 필요한 범위까지만 접근 가능하도록 재정비</li>
+        </ul>
+      </div>
+      <div class="retro-card">
+        <span class="label">RESULT — 결과</span>
+        <div class="role-title">교내 경진대회 <span class="cover-badge">최우수상 (1위)</span></div>
+        <ul class="retro-list">
+          <li>상수 분리·문서화로 유지보수를 훨씬 신중하고 체계적으로 진행할 수 있게 됨</li>
+          <li>API 명세서·데이터 출처까지 정리하면서 프로젝트 전체 완성도가 한 단계 올라감</li>
+          <li>이슈 체크 전후를 비교해보니 반복 작업에 들던 노력과 시간이 눈에 띄게 줄어든 걸 확인 — 이후 진행한 프로젝트에도 이 방식을 적용해 계속 좋은 효율을 얻으며 한 단계 더 성장함</li>
+          <li>팀원들과 함께 문제를 하나씩 개선해나간 결과, 교내 경진대회에서 <b>최우수상(1등)</b> 수상</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <footer>&copy; 2026 김정환.</footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script src="../src/project-skinai.js"></script>
+
+</body>
+</html>
