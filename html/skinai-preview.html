@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Skin AI — 김정환의 portfolio</title>
+<title>Skin AI — 김정환의 portfolio (미리보기)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -166,16 +166,16 @@
 <div class="topline">
   <span>~$ whoami kjh2853</span>
   <nav>
-    <a href="index.html">home</a>
-    <a href="index.html#projects">projects</a>
-    <a href="index.html#contact">contact</a>
+    <a href="index-preview.html">home</a>
+    <a href="index-preview.html#projects">projects</a>
+    <a href="index-preview.html#experience">experience</a>
   </nav>
 </div>
 
 <div class="container">
 
   <div class="hero">
-    <div class="back-row"><a class="back" href="index.html#projects">← projects</a></div>
+    <div class="back-row"><a class="back" href="index-preview.html#projects">← projects</a></div>
 
     <div class="badge-row">
       <span class="badge">AI / Computer Vision</span>
@@ -348,8 +348,126 @@ flowchart TD
   <footer>&copy; 2026 김정환.</footer>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
-<script src="../src/project-skinai.js"></script>
+<script>
+/* ---- src/skinai.js ---- */
+// ============================================================
+// Skin AI 상세 페이지: 아키텍처 차트(mermaid)를 불러와서 그립니다.
+// 불러오기에 실패하면 차트 원문이 그대로 보입니다.
+// ============================================================
+(function () {
+  "use strict";
+  var MERMAID_SRC = "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js";
+
+  function render() {
+    if (!window.mermaid) return;
+    window.mermaid.initialize({
+      startOnLoad: false,
+      theme: "base",
+      themeVariables: {
+        fontFamily: "JetBrains Mono, ui-monospace, monospace",
+        fontSize: "12px",
+        primaryColor: "#fdfdfc",
+        primaryBorderColor: "#1c1c1a",
+        primaryTextColor: "#1c1c1a",
+        lineColor: "#9b9b95",
+        secondaryColor: "#fdfdfc",
+        tertiaryColor: "#fdfdfc",
+        clusterBkg: "#fdfdfc",
+        clusterBorder: "#dcdcd6",
+        edgeLabelBackground: "#ffffff",
+      },
+      flowchart: { curve: "basis" },
+    });
+    window.mermaid.run({ nodes: Array.prototype.slice.call(document.querySelectorAll(".mermaid")) });
+  }
+
+  if (window.mermaid) return render();
+  var s = document.createElement("script");
+  s.src = MERMAID_SRC;
+  s.onload = render;
+  document.head.appendChild(s);
+})();
+
+</script>
+<script>
+/* ---- src/detail.js ---- */
+// ============================================================
+// 상세 페이지 공용 로직 (pages/chatbot.html, pages/skinai.html)
+// 1) 상단 목차 클릭 시 해당 섹션으로 부드럽게 이동 (sticky 목차 높이 보정)
+// 2) 스크롤 위치에 맞춰 목차 강조 (스크롤스파이)
+// 3) 본문 속 #dd-* 링크 / 주소(#dd-c)로 Deep Dive 카드를 펼치고 이동
+// ============================================================
+(function () {
+  "use strict";
+
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var toc = document.querySelector(".toc");
+
+  function offset() { return (toc ? toc.getBoundingClientRect().height : 0) + 12; }
+  function scrollToEl(el) {
+    var top = el.getBoundingClientRect().top + window.scrollY - offset();
+    window.scrollTo({ top: top, behavior: reduce ? "auto" : "smooth" });
+  }
+
+  // Deep Dive 카드(#dd-*) 열고 이동
+  function openAndGo(id, push) {
+    var t = document.getElementById(id);
+    if (!t) return false;
+    if (t.tagName === "DETAILS") t.open = true;
+    scrollToEl(t);
+    if (push) history.replaceState(null, "", "#" + id);
+    return true;
+  }
+  document.addEventListener("click", function (e) {
+    var a = e.target.closest('a[href^="#dd-"]');
+    if (!a) return;
+    if (openAndGo(a.getAttribute("href").slice(1), true)) e.preventDefault();
+  });
+  if (/^#dd-/.test(location.hash)) openAndGo(location.hash.slice(1), false);
+  window.addEventListener("hashchange", function () {
+    if (/^#dd-/.test(location.hash)) openAndGo(location.hash.slice(1), false);
+  });
+
+  if (!toc) return;
+
+  // 목차 클릭 이동
+  var links = Array.prototype.slice.call(toc.querySelectorAll("a"));
+  toc.addEventListener("click", function (e) {
+    var link = e.target.closest("a");
+    if (!link) return;
+    var target = document.querySelector(link.getAttribute("href"));
+    if (!target) return;
+    e.preventDefault();
+    scrollToEl(target);
+    history.replaceState(null, "", link.getAttribute("href"));
+  });
+
+  // 스크롤스파이
+  var sections = links
+    .filter(function (l) { return !l.hidden; })
+    .map(function (l) { return document.querySelector(l.getAttribute("href")); })
+    .filter(Boolean);
+
+  function setActive(id) {
+    links.forEach(function (l) {
+      var on = l.getAttribute("href") === "#" + id;
+      l.classList.toggle("active", on);
+      if (on) l.setAttribute("aria-current", "true");
+      else l.removeAttribute("aria-current");
+    });
+  }
+  if ("IntersectionObserver" in window) {
+    var io = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (en) { if (en.isIntersecting) setActive(en.target.id); });
+      },
+      { rootMargin: "-45% 0px -50% 0px", threshold: 0 }
+    );
+    sections.forEach(function (s) { io.observe(s); });
+  }
+})();
+
+</script>
 
 </body>
 </html>

@@ -1,9 +1,9 @@
 // ============================================================
-// AI 고객상담 자동화 시스템 — 상세 페이지 로직
-// 1) chatbot-data.js 의 값으로 수치·상태·개수·회사명을 렌더링
+// 인턴십(챗봇) 데이터 렌더링 — 메인 경력 카드와 pages/chatbot.html 에서 같이 사용
+// 1) chatbot-data.js 의 값으로 수치·상태·개수를 렌더링
 //    (값이 비어 있거나 {{...}} 상태면 화면에 표시하지 않음)
 // 2) RAG 개념 구조: 단계 hover/포커스/클릭 시 설명 표시
-// 3) 목차 클릭 스크롤 이동 + 스크롤스파이
+// ※ 목차 이동은 detail.js, 메뉴 강조·등장 효과는 main.js 가 맡습니다.
 // ============================================================
 (function () {
   "use strict";
@@ -178,72 +178,4 @@
     btn.addEventListener("click", function () { selectStep(btn); });
   });
   if (ragSteps.length) selectStep(ragSteps[0]);
-
-  // ---------- 본문 속 링크(#dd-*): 해당 Deep Dive 카드를 펼치고 이동 ----------
-  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  function openAndGo(id, push) {
-    var t = document.getElementById(id);
-    if (!t) return false;
-    if (t.tagName === "DETAILS") t.open = true;
-    var tocBar = document.querySelector(".toc");
-    var offset = (tocBar ? tocBar.getBoundingClientRect().height : 0) + 12;
-    var top = t.getBoundingClientRect().top + window.scrollY - offset;
-    window.scrollTo({ top: top, behavior: reduce ? "auto" : "smooth" });
-    if (push) history.replaceState(null, "", "#" + id);
-    return true;
-  }
-  document.addEventListener("click", function (e) {
-    var a = e.target.closest('a[href^="#dd-"]');
-    if (!a) return;
-    if (openAndGo(a.getAttribute("href").slice(1), true)) e.preventDefault();
-  });
-  if (/^#dd-/.test(location.hash)) openAndGo(location.hash.slice(1), false);
-  window.addEventListener("hashchange", function () {
-    if (/^#dd-/.test(location.hash)) openAndGo(location.hash.slice(1), false);
-  });
-
-  // ---------- 목차: 클릭 스크롤 이동 + 스크롤스파이 ----------
-  var toc = document.querySelector(".toc");
-  if (!toc) return;
-
-  var tocLinks = Array.prototype.slice.call(toc.querySelectorAll("a"));
-  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-  toc.addEventListener("click", function (e) {
-    var link = e.target.closest("a");
-    if (!link) return;
-    var target = document.querySelector(link.getAttribute("href"));
-    if (!target) return;
-    e.preventDefault();
-    var offset = toc.getBoundingClientRect().height + 12;
-    var top = target.getBoundingClientRect().top + window.scrollY - offset;
-    window.scrollTo({ top: top, behavior: reduceMotion ? "auto" : "smooth" });
-    history.replaceState(null, "", link.getAttribute("href"));
-  });
-
-  var sections = tocLinks
-    .filter(function (l) { return !l.hidden; })
-    .map(function (l) { return document.querySelector(l.getAttribute("href")); })
-    .filter(Boolean);
-
-  function setActive(id) {
-    tocLinks.forEach(function (l) {
-      var on = l.getAttribute("href") === "#" + id;
-      l.classList.toggle("active", on);
-      if (on) l.setAttribute("aria-current", "true");
-      else l.removeAttribute("aria-current");
-    });
-  }
-
-  if ("IntersectionObserver" in window) {
-    var observer = new IntersectionObserver(
-      function (entries) {
-        entries.forEach(function (en) {
-          if (en.isIntersecting) setActive(en.target.id);
-        });
-      },
-      { rootMargin: "-45% 0px -50% 0px", threshold: 0 }
-    );
-    sections.forEach(function (s) { observer.observe(s); });
-  }
 })();
