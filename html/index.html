@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>KJH — Backend / DB Developer Portfolio</title>
+<meta name="description" content="백엔드/DB 개발자 지망 포트폴리오" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container nav-path">
+    <div class="whoami"><span class="prompt">~$</span>whoami kjh2853</div>
+    <ul class="nav-links">
+      <li><a href="index.html" class="active">home</a></li>
+      <li><a href="projects.html">projects</a></li>
+      <li><a href="index.html#contact">contact</a></li>
+    </ul>
+  </div>
+</header>
+
+<main>
+  <section class="hero container">
+    <p class="eyebrow">about_me.sql</p>
+    <h1><span class="kw">SELECT</span> role <span class="kw">FROM</span> career<br><span class="kw">WHERE</span> focus = <span class="val">'backend & database'</span>;</h1>
+    <p class="lead">
+      IT 전공, 백엔드/DB 개발자를 목표로 하는 학생입니다.
+      정보처리기사·SQLD 자격을 바탕으로 IoT 모니터링, 임베디드 자동화 등
+      실데이터를 다루는 프로젝트를 만들어 왔습니다.
+    </p>
+    <div class="cta-row">
+      <a class="btn primary" href="projects.html">프로젝트 보기</a>
+      <a class="btn" href="assets/resume.pdf">이력서 다운로드</a>
+    </div>
+  </section>
+
+  <section class="container">
+    <h2 class="section-title"><span class="prompt">$</span>cat skills.txt</h2>
+    <p class="section-sub">-- 보유 기술 스택 및 자격</p>
+    <div class="skill-grid">
+      <div class="skill-card">
+        <h3>DATABASE</h3>
+        <p>MySQL, Supabase(PostgreSQL), 스키마 설계, SQLD</p>
+      </div>
+      <div class="skill-card">
+        <h3>BACKEND</h3>
+        <p>Python (Flask), REST API 설계</p>
+      </div>
+      <div class="skill-card">
+        <h3>EMBEDDED / IoT</h3>
+        <p>ESP32, C, 센서(DHT22, SHT31), 릴레이 제어</p>
+      </div>
+      <div class="skill-card">
+        <h3>FRONTEND</h3>
+        <p>HTML/CSS/JS, Chart.js</p>
+      </div>
+      <div class="skill-card">
+        <h3>CERTIFICATION</h3>
+        <p>정보처리기사, SQLD</p>
+      </div>
+      <div class="skill-card">
+        <h3>ETC</h3>
+        <p>Git/GitHub, Vercel 배포</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="container" id="contact">
+    <h2 class="section-title"><span class="prompt">$</span>cat contact.env</h2>
+    <p class="section-sub">-- 연락처</p>
+    <div class="contact-block">
+      <div class="line"><span class="k">EMAIL=</span><a href="mailto:you@example.com">you@example.com</a></div>
+      <div class="line"><span class="k">GITHUB=</span><a href="https://github.com/yourid" target="_blank" rel="noopener">github.com/yourid</a></div>
+      <div class="line"><span class="k">BLOG=</span><a href="#" target="_blank" rel="noopener">(선택) 기술 블로그 링크</a></div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    &copy; 2026 KJH. Built with plain HTML/CSS/JS.
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>반려 도마뱀 테라리움 자동 관리 시스템 — KJH Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container nav-path">
+    <div class="whoami"><span class="prompt">~$</span>whoami kjh2853</div>
+    <ul class="nav-links">
+      <li><a href="index.html">home</a></li>
+      <li><a href="projects.html" class="active">projects</a></li>
+      <li><a href="index.html#contact">contact</a></li>
+    </ul>
+  </div>
+</header>
+
+<main class="container" style="padding-top: 56px; padding-bottom: 80px;">
+  <p class="eyebrow" style="font-family: var(--font-mono); color: var(--accent-2); font-size: 0.85rem;">/projects/terrarium-automation</p>
+  <h1 style="font-family: var(--font-mono); font-size: clamp(1.6rem, 4vw, 2.2rem); margin: 10px 0;">반려 도마뱀 테라리움 자동 관리 시스템</h1>
+
+  <div class="detail-meta">
+    <div><span class="k">STACK=</span>ESP32, DHT22/SHT31, Relay Module, Web Dashboard</div>
+    <div><span class="k">ROLE=</span>백엔드/DB 설계, 데이터 시각화</div>
+    <div><span class="k">PERIOD=</span>2026.05 ~ (기간 채우기)</div>
+    <div><span class="k">REPO=</span><a href="#" target="_blank" rel="noopener">github.com/yourid/terrarium-automation</a></div>
+  </div>
+
+  <div class="detail-body">
+    <h2>개요</h2>
+    <p>
+      ESP32와 DHT22/SHT31 센서로 테라리움 내부 온습도를 측정하고, 릴레이 모듈로
+      히터·가습기 등을 자동 제어합니다. 웹 대시보드에서 실시간 상태 확인 및 원격 제어가 가능합니다.
+    </p>
+
+    <h2>DB 설계</h2>
+    <p>(여기에 ERD 이미지 또는 테이블 스키마 설명 삽입)</p>
+    <ul>
+      <li>terrarium_readings(id, device_id, temperature, humidity, recorded_at)</li>
+      <li>devices(id, name, species, target_temp_min, target_temp_max)</li>
+      <li>control_logs(id, device_id, action, triggered_at)</li>
+    </ul>
+
+    <h2>구현 포인트</h2>
+    <ul>
+      <li>ESP32에서 센서 값 주기적 수집 및 전송</li>
+      <li>임계값 기반 자동 제어 로직 (릴레이 ON/OFF)</li>
+      <li>웹 대시보드로 실시간 모니터링 및 수동 제어</li>
+    </ul>
+
+    <h2>배운 점 / 트러블슈팅</h2>
+    <p>(직접 겪은 문제와 해결 과정을 서술 — 예: 인덱싱 최적화, 대량 삽입 성능 이슈 등)</p>
+
+    <h2>스크린샷</h2>
+    <p>(assets/img/ 폴더에 이미지 넣고 &lt;img&gt; 태그로 삽입)</p>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    &copy; 2026 KJH. Built with plain HTML/CSS/JS.
+  </div>
+</footer>
+
+</body>
+</html>
